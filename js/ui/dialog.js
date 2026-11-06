@@ -25,13 +25,13 @@ const Dialog = {
   portrait(ctx, who, x, mirror) {
     const H = CFG.view.h, pn = 'portrait_' + who;
     if (Sprites.ok[pn] && Sprites.imgs[pn]) { Sprites.draw(ctx, pn, 'idle', 0, x, H - 6, null, {}); return; }   // dropped portrait PNG
-    const spr = who === 'zombie' ? 'walker' : 'player_' + who; if (!Sprites.ok[spr]) return;
-    ctx.save(); ctx.translate(x, H + 36); ctx.scale(mirror ? -4 : 4, 4);                                       // placeholder: the painted figure as a big bust
+    const spr = who === 'zombie' ? 'walker' : who === 'boss' ? 'boss_final' : 'player_' + who; if (!Sprites.ok[spr]) return;
+    const sc = who === 'boss' ? 2.4 : 4; ctx.save(); ctx.translate(x, H + 36); ctx.scale(mirror ? -sc : sc, sc);                                       // placeholder: the painted figure as a big bust
     Sprites.draw(ctx, spr, 'idle', Game.time, 0, 0, { x: 0.45, y: 1 }, {}); ctx.restore();
   },
   draw(ctx) {
     const W = CFG.view.w, H = CFG.view.h, L = Dialog.lines[Dialog.i]; if (!L) return;
-    const narr = L.w === 'narrator', left = L.w === Player.look && Story.phase !== 'intro', zom = L.w === 'zombie', col = zom ? PAL.uiEnemy : narr ? PAL.uiDim : PAL.uiPlayer;
+    const narr = L.w === 'narrator', left = L.w === Player.look && Story.phase !== 'intro', zom = L.w === 'zombie' || L.w === 'boss', col = zom ? PAL.uiEnemy : narr ? PAL.uiDim : PAL.uiPlayer;
     const gr = ctx.createLinearGradient(0, H - 130, 0, H); gr.addColorStop(0, 'rgba(4,6,11,0)'); gr.addColorStop(1, 'rgba(4,6,11,.85)'); ctx.fillStyle = gr; ctx.fillRect(0, H - 130, W, 130);
     const bx = 16, by = H - 66, bw = W - 32, bh = 56;
     UI.box(ctx, bx, by, bw, bh, col, 'rgba(8,11,18,.94)');

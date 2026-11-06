@@ -76,6 +76,8 @@ const CFG = {
       { atk: ['slam', 'rain'], gap: 1.8 }, { atk: ['slam', 'leap', 'summon'], gap: 1.5, arena: 'pillars', add: ['bloater', 2] }, { atk: ['leap', 'slam', 'rain', 'ring'], gap: 1.1, arena: 'clear', add: ['bloater', 2] } ] },
     dj:       { name: 'DJ BASSDROP',      hp: 460, armor: 150, speed: 1.3, r: 0.50, color: '#3a6ac0', keep: 4.5, phases: [
       { atk: ['ring', 'fan'], gap: 1.4 }, { atk: ['spiral', 'ring', 'slam'], gap: 1.2, arena: 'pillars', add: ['runner', 2] }, { atk: ['spiral', 'ring', 'rain', 'blink'], gap: 0.9, arena: 'clear', add: ['spitter', 2] } ] },
+    grossvermueller: { name: 'ADOLFI HITLER', hp: 950, armor: 320, speed: 1.3, r: 0.6, color: '#2b2a2e', keep: 3, final: true, phases: [   // final boss of the bunker (fictional)
+      { atk: ['charge', 'rain', 'fan'], gap: 1.4 }, { atk: ['slam', 'spiral', 'rain', 'charge'], gap: 1.15, arena: 'lava', add: ['brute', 1] }, { atk: ['spiral', 'ring', 'leap', 'rain', 'summon'], gap: 0.85, arena: 'lava', add: ['hexer', 1] } ] },
     rat:      { name: 'DER RATTENKOENIG', hp: 420, armor: 100, speed: 2.2, r: 0.45, color: '#8a5a4a', keep: 2.5, phases: [
       { atk: ['leap', 'fan'], gap: 1.2 }, { atk: ['leap', 'trail', 'summon'], gap: 1.0, arena: 'pillars', add: ['runner', 3] }, { atk: ['leap', 'leap', 'trail', 'rain', 'summon'], gap: 0.8, arena: 'clear', add: ['runner', 3] } ] }
   },
@@ -108,13 +110,16 @@ const CFG = {
     { id: 'r_vamp', branch: 'surv', kind: 'run', gx: -2, gy: -1, ic: 'BLU', name: 'Blutdurst',        desc: '+2 HP pro Kill (Run)',    max: 3, cost: [1, 1, 2],         stat: 'vamp',  per: 2,    req: [['hp', 1]] },
     { id: 'r_tough', branch: 'surv', kind: 'run', gx: -3, gy: -1, ic: 'ZAE', name: 'Zaehigkeit',      desc: '+12 Max HP (Run)',        max: 3, cost: [1, 1, 2],         stat: 'hp',    per: 12,   req: [['armor', 1]] }
   ],
-  run:    { bossEvery: 5, biomeOrder: [1, 2, 3, 0], tierHp: 0.45, tierDmg: 0.25, roomHp: 0.06, roomDmg: 0.03,   // biome order: Flur, Bad, Keller, Kueche (the hub stays our kitchen)
-            healRoom: 15, healBoss: 40, hpScale: 0.08, hpBase: 1.5, dmgScale: 0.04, fade: 0.3 },   // endless run, boss + container every 5th room
+  run:    { bossEvery: 5, biomeOrder: [1, 2, 3, 4], tierHp: 0.45, tierDmg: 0.25, roomHp: 0.06, roomDmg: 0.03,   // biome order: Flur, Bad, Keller, Bunker (the hub stays our kitchen)
+            healRoom: 15, healBoss: 40, hpScale: 0.08, hpBase: 1.5, dmgScale: 0.04, fade: 0.3,
+            boss: { hp: [1.2, 2.4, 3.6, 4.6], dmg: [1.1, 1.5, 1.95, 2.45], gap: [1, 0.9, 0.82, 0.75], loopHp: 0.8, loopDmg: 0.25 },   // per boss number: boss 1 is fair, boss 4 needs a well-upgraded character
+            winBonus: 40 },                                                                     // extra trash for beating the final boss   // endless run, boss + container every 5th room
   biomes: [                                                                         // biome changes after each boss
     { name: 'KUECHE', col: { floorA: '#2a2733', floorB: '#242130', wallTop: '#4a4458', wallL: '#2c2836', wallR: '#1c1924' } },
     { name: 'FLUR',   col: { floorA: '#2d2a22', floorB: '#26231c', wallTop: '#5a4f3a', wallL: '#352f22', wallR: '#211d15' } },
     { name: 'BAD',    col: { floorA: '#223034', floorB: '#1c282c', wallTop: '#3f6068', wallL: '#233a40', wallR: '#16262a' } },
-    { name: 'KELLER', col: { floorA: '#2a2224', floorB: '#231c1e', wallTop: '#58393f', wallL: '#33202a', wallR: '#1f1318' } } ],
+    { name: 'KELLER', col: { floorA: '#2a2224', floorB: '#231c1e', wallTop: '#58393f', wallL: '#33202a', wallR: '#1f1318' } },
+    { name: 'BUNKER', col: { floorA: '#3a3634', floorB: '#322e2c', wallTop: '#5a524c', wallL: '#2a2522', wallR: '#3c3530' } } ],
   trash: { cap: 6, slow: 0.25, pickR: 1.0, depositR: 1.4, hitDelay: 0.8,   // cap in weight units; slow = max move penalty
            kinds: { bag:   { name: 'Muellsack', w: 1, v: 1, col: '#3b4a3a', hi: '#7ba06a' },
                     crate: { name: 'Muellkiste', w: 2, v: 3, col: '#6a5030', hi: '#b08a50' },

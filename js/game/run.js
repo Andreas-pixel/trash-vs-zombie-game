@@ -26,7 +26,7 @@ const Run = {
   deadT: 0, log: [], roomT: 0, dmg: 0, last: null,
   hasContainer(n) { return n % 2 === 0 || n % CFG.run.bossEvery === 0; },     // container in every 2nd room and every boss room
   nextContainer() { let n = Run.room; while (!Run.hasContainer(n)) n++; return n; },
-  start() { Game.mode = 'run'; Save.stats.runs++; Skills.resetRun(); Skills.apply(); Run.room = 1; Run.trans = null; Run.log = []; Trash.newRun(); Run.load(true); },
+  start() { Game.mode = 'run'; Run.won = false; Save.stats.runs++; Skills.resetRun(); Skills.apply(); Run.room = 1; Run.trans = null; Run.log = []; Trash.newRun(); Run.load(true); },
   load(full) {
     const n = Run.room; Run.boss = n % CFG.run.bossEvery === 0;
     const R = CFG.run; Run.biome = CFG.biomes[R.biomeOrder[Run.tier() % R.biomeOrder.length]];
@@ -38,7 +38,9 @@ const Run = {
     Camera.snap(Player.x, Player.y);
     Combat.reset(); Trash.roomLoot(Run.boss); Combat.startWave(Run.spec(n, Run.boss));        // carried trash stays with the player
     Run.locked = true; Run.state = 'fight'; Run.deadT = 0; Run.roomT = Game.time; Run.dmg = 0;
+    if (Run.biome.name === 'BUNKER') Env.lava(Run.boss ? 2 : 3);
     Combat.text(Player.x, Player.y - 0.5, Run.boss ? 'BOSSRAUM' : 'RAUM ' + n, PAL.uiWorld, true);
+    if (Run.boss && Run.biome.name === 'BUNKER') Dialog.start(STORY.finalBoss.intro);
   },
   cleared() {
     Run.state = 'cleared'; Run.locked = false; Camera.shake(2); Snd.sfx('door');
@@ -52,17 +54,18 @@ const Run = {
       Run.trans.t += dt;
       if (Run.trans.phase === 'out' && Run.trans.t >= CFG.run.fade) {
         const to = Run.trans.to;
-        if (to === 'hub') Hub.enter(); else if (to === 'tuthub') { Hub.enter(); Tut.hubBegin(); } else if (to === 'run') Run.start(); else { Run.room++; Run.load(false); }
+        if (to === 'roof') Roof.enter(); else if (to === 'hub') { const real = Game.mode === 'run' || Game.mode === 'roof'; Hub.enter(); Story.pendingFirst = real && Save.flags.tut && !Save.flags.firstRun; } else if (to === 'tuthub') { Hub.enter(); Tut.hubBegin(); } else if (to === 'run') Run.start(); else { Run.room++; Run.load(false); }
         Run.trans = { phase: 'in', t: 0 };
       }
-      else if (Run.trans.phase === 'in' && Run.trans.t >= CFG.run.fade) Run.trans = null;
+      else if (Run.trans.phase === 'in' && Run.trans.t >= CFG.run.fade) { Run.trans = null; if (Roof.pending) { Roof.pending = false; Roof.arrive(); } if (Story.pendingFirst) { Story.pendingFirst = false; Story.firstRun(); } }   // dialogs only after the fade, never during it
       return;
     }
     if (Game.mode === 'hub') { if (Tut.hub) Tut.hubUpdate(dt); if (!Game.ui) Hub.update(); return; }
     if (Game.mode === 'tut') { Tut.update(dt); return; }
+    if (Game.mode === 'roof') { if (!Game.ui) Roof.update(dt); return; }
     if (Player.dead) { Run.deadT += dt; if (Run.deadT > 1.6) Run.trans = { phase: 'out', t: 0, to: 'hub' }; return; }   // death -> back to kitchen
     if (Run.state === 'cleared' && Room.door && Math.floor(Player.x) === Room.door.x && Math.floor(Player.y) === Room.door.y)
-      Run.trans = { phase: 'out', t: 0 };
+      Run.trans = Run.won ? { phase: 'out', t: 0, to: 'roof' } : { phase: 'out', t: 0 };
   },
   drawFade(ctx) {
     if (!Run.trans) return;

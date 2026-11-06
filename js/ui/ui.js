@@ -96,7 +96,7 @@ const UI = {
       if (Skills.sp > 0) UI.glow(ctx, 'SP ' + Skills.sp + '  [K]', hx + 92, 33, PAL.uiPlayer, 'bold 7px monospace', 'right', 8);
     }
     // room sign, top right (world = purple)
-    const title = Game.mode === 'tut' ? 'TUTORIAL  ·  BAD' : run ? 'RAUM ' + Run.room + '  ·  ' + Run.biomeName() + (Run.boss ? '  ·  BOSS' : '') : 'WG-KUECHE';
+    const title = Game.mode === 'tut' ? 'TUTORIAL  ·  BAD' : run ? 'RAUM ' + Run.room + '  ·  ' + Run.biomeName() + (Run.boss ? '  ·  BOSS' : '') : Game.mode === 'roof' ? 'DACH  ·  SIEGESFEIER' : 'WG-KUECHE';
     ctx.font = 'bold 8px monospace'; const tw = Math.max(110, ctx.measureText(title).width + 16);
     UI.box(ctx, W - tw - 8, 6, tw, run ? 35 : 26, PAL.uiWorld);
     UI.glow(ctx, title, W - 8 - tw / 2, 9, PAL.uiWorld, 'bold 8px monospace', 'center', 10);
@@ -150,7 +150,7 @@ const UI = {
   PAUSE() {
     const L = [['resume', 'WEITER'], ['snd', 'TON: ' + (Snd.muted ? 'AUS' : 'AN')], ['shake', 'KAMERA-WACKELN: ' + (UI.shakeFull ? 'VOLL' : 'REDUZIERT')]];
     if (UI.confirm) return [['no', 'NEIN, ZURÜCK'], ['yes', 'JA, SPIELSTAND LÖSCHEN']];
-    if (Game.mode === 'run') L.push(['abandon', 'RUN ABBRECHEN']); else if (Game.mode === 'tut' || Tut.hub) L.push(['skip', 'TUTORIAL ÜBERSPRINGEN']); else L.push(['tut', 'TUTORIAL STARTEN']);
+    if (Game.mode === 'run') L.push(['abandon', 'RUN ABBRECHEN']); else if (Game.mode === 'roof') {} else if (Game.mode === 'tut' || Tut.hub) L.push(['skip', 'TUTORIAL ÜBERSPRINGEN']); else L.push(['tut', 'TUTORIAL STARTEN']);
     if (Game.mode === 'hub') L.push(['title', 'TITELBILDSCHIRM'], ['reset', 'SPIELSTAND LÖSCHEN']);
     return L;
   },
@@ -199,7 +199,7 @@ const UI = {
       ctx.fillStyle = 'rgba(20,4,12,' + (0.55 * k) + ')'; ctx.fillRect(0, 0, W, H);
       ctx.globalAlpha = k; UI.glow(ctx, 'GESTORBEN', W / 2, H / 2 - 26, PAL.uiHp, 'bold 16px monospace', 'center', 16);
       UI.text(ctx, 'RAUM ' + Run.room + '   ·   MUELL VERLOREN: ' + (Trash.lost || 0) + '   ·   GESICHERT: ' + Trash.secured, W / 2, H / 2 + 0, PAL.uiText, '8px monospace', 'center');
-      UI.text(ctx, 'ZURUECK IN DIE KUECHE ...', W / 2, H / 2 + 14, PAL.uiDim, '7px monospace', 'center'); ctx.globalAlpha = 1;
+      UI.text(ctx, Run.boss ? 'ZU STARK? KAUF DIR AM KÜHLSCHRANK FÄHIGKEITEN UND HOL DIR BESSERE KLEIDUNG.' : 'ZURUECK IN DIE KUECHE ...', W / 2, H / 2 + 14, Run.boss ? PAL.uiInteract : PAL.uiDim, '7px monospace', 'center'); ctx.globalAlpha = 1;
     }
     if (Game.ui === 'title') {
       const gr = ctx.createRadialGradient(W / 2, H / 2, 40, W / 2, H / 2, 300); gr.addColorStop(0, 'rgba(6,8,14,.72)'); gr.addColorStop(1, 'rgba(3,4,8,.96)');
@@ -222,7 +222,7 @@ const UI = {
       });
       UI.head(ctx, 'STEUERUNG', 264, 99, 'left', 8);
       UI.CONTROLS.forEach(([k, v], i) => { UI.text(ctx, k, 264, 114 + i * 11, PAL.uiText, 'bold 7px monospace'); UI.text(ctx, v, 330, 114 + i * 11, PAL.uiDim, '7px monospace'); });
-      if (!UI.confirm) UI.text(ctx, 'W/S + ENTER ODER MAUS  ·  ESC: WEITER', 140, 92 + bh + 6, PAL.uiDim, '7px monospace', 'center');
+      if (!UI.confirm) UI.text(ctx, 'W/S + ENTER ODER MAUS  ·  ESC: WEITER', 140, Math.min(92 + bh + 6, H - 12), PAL.uiDim, '7px monospace', 'center');
     }
   }
 };

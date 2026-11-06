@@ -7,6 +7,7 @@ const Paint = {
     coole:       { kind: 'res', skin: '#8c5a3c', hair: '#17100e', top: '#2c2029', jacket: '#3a2d36', fur: '#b8935c', pants: '#1f2a3d', shoes: '#cfc8bc', style: 'curls', face: 'grin' },
     schuechtern: { kind: 'res', skin: '#e4b595', hair: '#d9ad5c', top: '#5d6b2d', pants: '#2c3d5e', shoes: '#4a3b2e', style: 'short', face: 'shy', folded: true },
     nerdig:      { kind: 'res', skin: '#dba885', hair: '#241712', top: '#7e2c33', pants: '#2b2b3a', shoes: '#2c2c30', style: 'messy', face: 'glasses' },
+    boss_final:  { kind: 'zom', skin: '#7f9a86', hair: '#1a1a1c', top: '#2b2a2e', pants: '#34332f', shoes: '#0e0f12', strap: '#6b5a3e', belt: '#1b1a18', cap: '#1e1f24', band: PAL.neonPurple, glow: '#ff7a3a' },
     walker:      { kind: 'zom', skin: '#8fa88c', hair: '#2a2622', top: '#585b47', pants: '#6d6853', shoes: '#15161a', strap: '#3a2e24', belt: '#1b1a18', cap: '#4b4e3e', band: PAL.neonPurple, glow: '#b8ff7c' }
   },
   VIEWS: { S: { side: 0, back: false }, SE: { side: 0.5, back: false }, E: { side: 1, back: false }, NE: { side: 0.5, back: true }, N: { side: 0, back: true } },
@@ -130,13 +131,13 @@ const Paint = {
     arm_(true);
     g.restore();   // arms are part of the (rotated / faded) figure
   },
-  sheet(name, defName, L, seed) {
+  sheet(name, defName, L, seed, scale) {
     const d = CFG.sprites[defName], ks = Object.keys(d.anims), rows = d.dirs === 8 ? ['S', 'SE', 'E', 'NE', 'N'] : ['S', 'E', 'N'], rnd = Paint.rng(seed);
     const cols = Math.max(...ks.map(k => d.anims[k].n)), { c, g } = Paint.canvas(cols * d.fw, ks.length * rows.length * d.fh);
     ks.forEach((an, ai) => rows.forEach((dir, ri) => { for (let f = 0; f < d.anims[an].n; f++) {
       const x0 = f * d.fw, y0 = (ai * rows.length + ri) * d.fh;
       g.save(); g.beginPath(); g.rect(x0, y0, d.fw, d.fh); g.clip(); g.translate(x0 + d.ax, y0 + d.ay);
-      Paint.rig(g, L, Paint.VIEWS[dir], an, f, d.anims[an].n); Paint.grain(g, rnd, -d.ax, -d.ay, d.fw, d.fh, 90);
+      if (scale) g.scale(scale, scale); Paint.rig(g, L, Paint.VIEWS[dir], an, f, d.anims[an].n); if (scale) g.scale(1 / scale, 1 / scale); Paint.grain(g, rnd, -d.ax, -d.ay, d.fw, d.fh, 90);
       g.restore();
     } }));
     Sprites.imgs[name] = c; Sprites.ok[name] = true;
@@ -145,7 +146,8 @@ const Paint = {
     { f: ['#2e4960', '#274055'], grout: '#0f1a24', stain: PAL.petrol,   wt: '#456a88', wl: '#1d3043', wr: '#2b4a63', ac: PAL.neonCyan },
     { f: ['#313a78', '#292f64'], grout: '#10132b', stain: PAL.lavender, wt: '#4f559e', wl: '#1f2352', wr: '#323a82', ac: PAL.neonPurple },
     { f: ['#34808a', '#2d6e77'], grout: '#12303a', stain: PAL.mint,     wt: '#5aaaa8', wl: '#1f4f58', wr: '#2e7580', ac: PAL.neonGreen },
-    { f: ['#322838', '#2a2130'], grout: '#120d16', stain: PAL.rose,     wt: '#5a4663', wl: '#1e1626', wr: '#322540', ac: PAL.pink }
+    { f: ['#322838', '#2a2130'], grout: '#120d16', stain: PAL.rose,     wt: '#5a4663', wl: '#1e1626', wr: '#322540', ac: PAL.pink },
+    { f: ['#3a3634', '#322e2c'], grout: '#14110f', stain: '#8a3a1e',    wt: '#5a524c', wl: '#2a2522', wr: '#3c3530', ac: '#ff7a3a' }
   ],
   tiles() {
     const B = CFG.biomes.length, rnd = Paint.rng(77), T = Paint.THEME;
@@ -193,6 +195,7 @@ const Paint = {
     for (const k of Paint.NAMES) D['player_' + k] = D.player;                    // one sheet per resident (same layout as 'player')
     Paint.NAMES.forEach((k, i) => Paint.sheet('player_' + k, 'player', Paint.LOOKS[k], 11 + i * 7));
     Paint.sheet('walker', 'walker', Paint.LOOKS.walker, 5);
+    D.boss_final = D.boss; Paint.sheet('boss_final', 'boss', Paint.LOOKS.boss_final, 23, 1.75);   // the bunker's final boss gets a painted body
     Paint.tiles(); Env.init();                                                    // dropped PNGs (Sprites.set) still override these procedural sheets
   }
 };

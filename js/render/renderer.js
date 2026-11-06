@@ -32,6 +32,7 @@ const Renderer = {
     return [[t.x, t.y - lift], [r.x, r.y - lift], [b.x, b.y - lift], [l.x, l.y - lift]];
   },
   floor(ctx, cam) {
+    if (Game.mode === 'roof') { Roof.floor(ctx, cam); return; }
     for (let y = 0; y < Room.h; y++) for (let x = 0; x < Room.w; x++) {
       const tl = Room.tiles[y][x]; if (tl === 1 || (tl === 2 && Run.locked)) continue;
       if (tl === 0 && Sprites.tile(ctx, 'floor', x, y, cam)) continue;
@@ -42,6 +43,7 @@ const Renderer = {
     if (Tut.target) Tut.drawFloor(ctx, cam);
   },
   wall(ctx, x, y, cam) {
+    if (Game.mode === 'roof') return Roof.wall(ctx, x, y, cam);
     if (Room.tiles[y][x] === 1 && (Env.drawWall(ctx, x, y, cam) || Sprites.tile(ctx, 'wall', x, y, cam))) return;
     const H = CFG.tile.wallH, base = Renderer.corners(x, y, cam), top = Renderer.corners(x, y, cam, H);
     Renderer.poly(ctx, [top[3], top[2], base[2], base[3]], CFG.col.wallL);   // left face
@@ -111,7 +113,7 @@ const Renderer = {
     else if (id === 'pan') { seg(-1, 8, 1.8, '#3a3d44'); const ex = hx + c * 11, ey = hy + s * 11; ctx.fillStyle = PAL.ink; ctx.beginPath(); ctx.arc(ex, ey, 5.3, 0, 7); ctx.fill(); ctx.fillStyle = '#4a505a'; ctx.beginPath(); ctx.arc(ex, ey, 4.4, 0, 7); ctx.fill(); ctx.strokeStyle = PAL.neonCyan + '99'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.arc(ex, ey, 3.7, -0.9, 0.5); ctx.stroke(); }
     else { seg(-1, 2.5, 2.2, '#26262e'); seg(2.5, 11, 1.7, '#dfe8ee'); }
   },
-  AMB: { KUECHE: '8,12,24', FLUR: '14,10,30', BAD: '4,16,22', KELLER: '22,8,18' },
+  AMB: { KUECHE: '8,12,24', FLUR: '14,10,30', BAD: '4,16,22', KELLER: '22,8,18', BUNKER: '30,10,4', DACH: '12,14,34' },
   lights() {
     const L = [], T = Game.time, fl = 1 + Math.sin(T * 11) * 0.03 + Math.sin(T * 23) * 0.02;
     L.push({ x: Player.x, y: Player.y, z: 8, r: 150 * fl, a: 1, col: '110,225,235', g: 0.10 });                       // player torch (flickers)
@@ -120,6 +122,9 @@ const Renderer = {
     for (const e of Combat.enemies) {
       if (e.state === 'windup') L.push({ x: e.x, y: e.y, z: 10, r: 40, a: 0.6, col: '255,60,40', g: 0.2 });
       if (e.type === 'boss') L.push({ x: e.x, y: e.y, z: 14, r: 90, a: 0.7, col: '180,60,150', g: 0.12 });
+    }
+    for (const h of Combat.hazards) if (h.lava) L.push({ x: h.x, y: h.y, z: 2, r: 75, a: 0.9, col: '255,110,30', g: 0.22 });
+    {
     }
     for (const g of Gear.drops) if (g.item.r >= 1) L.push({ x: g.x, y: g.y, z: 8, r: 45, a: 0.7, col: Gear.rgb(CFG.gear.rarities[g.item.r].col), g: 0.25 });
     for (const c of Room.containers) L.push({ x: c.x, y: c.y, z: 12, r: 55, a: 0.8, col: '120,230,130', g: 0.12 });
@@ -136,7 +141,7 @@ const Renderer = {
   lighting(ctx) {   // chiaroscuro: dark ambient light map, lights punch holes, additive glow on top
     const W = CFG.view.w, H = CFG.view.h, g = Renderer.lm.getContext('2d'), v = Camera.view(), Ls = Renderer.lights();
     g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, W, H);
-    g.fillStyle = 'rgba(' + (Renderer.AMB[Run.biome.name] || '8,6,14') + ',0.86)'; g.fillRect(0, 0, W, H);
+    g.fillStyle = 'rgba(' + (Renderer.AMB[Run.biome.name] || '8,6,14') + ',' + (Game.mode === 'roof' ? 0.5 : 0.86) + ')'; g.fillRect(0, 0, W, H);
     g.globalCompositeOperation = 'destination-out';
     for (const l of Ls) {
       const p = Iso.toScreen(l.x, l.y, v), y = p.y - l.z, gr = g.createRadialGradient(p.x, y, 0, p.x, y, l.r);
@@ -175,6 +180,7 @@ const Renderer = {
     const ctx = Renderer.ctx, v = Camera.view(), cam = { x: v.x, y: v.y };
     ctx.setTransform(CFG.view.ss, 0, 0, CFG.view.ss, 0, 0);   // all drawing code keeps using logical 480x270 units
     ctx.fillStyle = '#07060a'; ctx.fillRect(0, 0, CFG.view.w, CFG.view.h);
+    if (Game.mode === 'roof') { Roof.sky(ctx, cam); Roof.building(ctx, cam); }
     Renderer.floor(ctx, cam);
     Particles.drawDecals(ctx, cam);
     Boss.drawHazards(ctx, cam);
@@ -194,8 +200,10 @@ const Renderer = {
     if (Room.wardrobe) list.push({ d: Room.wardrobe.x + Room.wardrobe.y, f: () => Hub.drawWardrobe(ctx, cam) });
     if (Game.mode === 'hub' && Room.door) list.push({ d: Room.door.x + Room.door.y + 2, f: () => Hub.drawDoorLabel(ctx, cam) });
     if (Game.mode === 'tut' && Room.door && !Run.locked) list.push({ d: 99, f: () => { const s = Iso.toScreen(Room.door.x + 0.5, Room.door.y + 0.5, cam); Trash.label(ctx, Math.round(s.x), Math.round(s.y) - 14, 'IN DIE KÜCHE >>', PAL.uiInteract); } });
-    for (const n of Hub.npcs()) list.push({ d: n.x + n.y, f: () => Hub.drawNpc(ctx, n, cam) });
+    for (const n of Hub.npcs()) list.push({ d: n.x + n.y, f: () => Game.mode === 'roof' ? Roof.drawNpc(ctx, n, cam) : Hub.drawNpc(ctx, n, cam) });
+    if (Game.mode === 'roof') Roof.objects(list, ctx, cam);
     list.sort((a, b) => a.d - b.d).forEach(o => o.f());
+    if (Game.mode === 'roof') Roof.strands(ctx, cam);
     Combat.drawFx(ctx, cam);
     Combat.drawRing(ctx, cam);
     Abilities.drawTel(ctx, cam); Boss.drawTel(ctx, cam);
@@ -204,6 +212,7 @@ const Renderer = {
     Combat.drawText(ctx, cam);
     if (debug) Renderer.debug(ctx, cam);
     Renderer.hud(ctx, fps);
+    if (Game.mode === 'roof') Roof.drawOverlay(ctx);
     if (Game.ui === 'menu') Menu.draw(ctx);
     UI.overlays(ctx);
     Run.drawFade(ctx);

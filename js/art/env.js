@@ -2,11 +2,11 @@
 // Klassisches Skript: alle Dateien teilen sich die globalen Objekte; die Reihenfolge in index.html zaehlt.
 /* ============ ENV (painted environment: furniture per biome, tall back walls with decor, floor decor, props, trash) ============ */
 const Env = {
-  FURN: [['counter', 'stove', 'table', 'cabinet'], ['dresser', 'shoes', 'coat', 'plant'], ['vanity', 'wc', 'tub', 'washer'], ['mshelf', 'boiler', 'washer', 'sofa']],   // per biome
-  DECO: [['rug', 'crack', 'stain'], ['runner', 'mat', 'stain'], ['puddle', 'bathmat', 'drain'], ['cables', 'drain', 'oil']],
+  FURN: [['counter', 'stove', 'table', 'cabinet'], ['dresser', 'shoes', 'coat', 'plant'], ['vanity', 'wc', 'tub', 'washer'], ['mshelf', 'boiler', 'washer', 'sofa'], ['sandbags', 'console', 'maptable', 'generator']],   // per biome
+  DECO: [['rug', 'crack', 'stain'], ['runner', 'mat', 'stain'], ['puddle', 'bathmat', 'drain'], ['cables', 'drain', 'oil'], ['rubble', 'cables', 'oil']],
   TRASH: ['can', 'bottle', 'banana', 'box'],
   WH: 40, imgs: {},                                                     // WH = height of the back walls in logical px
-  biome() { return Math.max(0, CFG.biomes.indexOf(Run.biome)) % 4; },
+  biome() { return Math.max(0, CFG.biomes.indexOf(Run.biome)) % Env.FURN.length; },
   P(u, v, z) { return [(u - v) * 16, (u + v) * 8 - z]; },             // tile-local iso point (origin = top corner of the tile)
   path(g, pts) { g.beginPath(); pts.forEach((q, i) => i ? g.lineTo(q[0], q[1]) : g.moveTo(q[0], q[1])); g.closePath(); },
   fillPts(g, pts, col, stroke) { Env.path(g, pts); g.fillStyle = col; g.fill(); if (stroke !== false) { g.lineWidth = 0.6; g.lineJoin = 'round'; g.strokeStyle = PAL.ink; g.stroke(); } },
@@ -88,6 +88,23 @@ const Env = {
     washer(g) { const E = Env; E.box(g, .12, .12, .88, .88, 0, 18, '#c5ced2');
       const F = E.FL(.12, .88, .88, 0, 18), c = F(.5, .42); E.ell(g, c, 4.2, 4.6, '#8e9ca2', PAL.ink); E.ell(g, c, 3, 3.3, '#253038'); E.ell(g, [c[0] - 1, c[1] - 1.2], 1, .6, 'rgba(200,230,240,.5)');
       E.line(g, F(.06, .84), F(.94, .84), .5, PAL.ink); E.ell(g, F(.8, .92), .7, .5, '#357079'); },
+    sandbags(g) { const E = Env, P = E.P, cols = ['#8a7a5a', '#7a6c50', '#968660'];
+      for (let r = 0; r < 3; r++) for (const v of [.36, .66]) for (let i = 0; i < 3; i++) { const u = .2 + i * .3 + (r % 2) * .1; if (u > .86) continue; const c = P(u, v, 3 + r * 4.4); E.ell(g, c, 4.4, 2.5, cols[(i + r) % 3], PAL.ink); E.line(g, [c[0] - 2.6, c[1] - .6], [c[0] + 1.6, c[1] - 1.2], .4, 'rgba(255,240,200,.25)'); } },
+    console(g) { const E = Env, P = E.P; E.box(g, .1, .2, .9, .8, 0, 12, '#3a3f3a');
+      E.fillPts(g, [P(.1, .2, 12), P(.9, .2, 12), P(.9, .55, 18), P(.1, .55, 18)], '#2c312c');
+      for (const u of [.2, .5]) E.fillPts(g, [P(u, .28, 13.5), P(u + .24, .28, 13.5), P(u + .24, .48, 16.8), P(u, .48, 16.8)], '#1d2a22');
+      E.line(g, P(.24, .4, 15.2), P(.4, .4, 15.2), .4, 'rgba(90,150,110,.6)'); E.line(g, P(.54, .36, 14.6), P(.68, .44, 15.8), .4, 'rgba(90,150,110,.6)');
+      for (const [u, c] of [[.3, '#7a2a22'], [.45, '#a07a30'], [.6, '#7a2a22'], [.75, '#4a6a4a']]) E.ell(g, P(u, .66, 12), 1, .6, c, PAL.ink); },
+    maptable(g) { const E = Env, P = E.P;
+      for (const [u, v] of [[.12, .12], [.8, .12], [.12, .8], [.8, .8]]) E.box(g, u, v, u + .08, v + .08, 0, 12, '#3a3028', { rim: false });
+      E.box(g, .06, .06, .94, .94, 12, 2, '#5a4a38');
+      E.fillPts(g, [P(.14, .14, 14), P(.86, .14, 14), P(.86, .86, 14), P(.14, .86, 14)], '#b8a882');
+      Env.poly(g, [P(.2, .3, 14), P(.35, .42, 14), P(.5, .36, 14), P(.62, .55, 14), P(.8, .5, 14)], .6, 'rgba(70,60,45,.8)');
+      for (const [u, v] of [[.36, .42], [.6, .55], [.48, .7]]) E.ell(g, P(u, v, 14), .9, .6, '#a03020', PAL.ink); },
+    generator(g) { const E = Env, P = E.P; E.box(g, .12, .18, .88, .82, 0, 14, '#4a4f4a');
+      const F = E.FL(.12, .88, .82, 0, 14); for (let i = 1; i < 6; i++) E.line(g, F(.1, i / 6.5), F(.6, i / 6.5), .5, PAL.ink);
+      E.fillPts(g, E.quad(F, .68, .5, .9, .78), '#c8a030'); E.line(g, F(.7, .64), F(.88, .64), .4, PAL.ink);
+      E.line(g, P(.7, .3, 14), P(.7, .3, 24), 2.4, PAL.ink); E.line(g, P(.7, .3, 14), P(.7, .3, 24), 1.4, '#5a5550'); E.ell(g, P(.7, .3, 25), 1.6, 1, 'rgba(30,30,30,.6)'); },
     mshelf(g) { const E = Env, cols = ['#6d72a5', '#8e4869', '#357079', '#a07a50', '#cfd8dc'];
       for (const [u, v] of [[.12, .22], [.82, .22]]) E.box(g, u, v, u + .06, v + .06, 0, 30, '#5d6670', { rim: false });
       for (const z of [0, 10, 20]) {
@@ -170,20 +187,29 @@ const Env = {
     if (b === 1) { for (let i = 0; i < 8; i++) E.fillPts(g, E.quad(F, i / 8, .4, i / 8 + .06, 1), 'rgba(207,224,230,.07)', false); ln(0, .4, 1, .4, 'rgba(207,224,230,.25)', .9); ln(0, .38, 1, .38, PAL.ink, .5); }
     if (b === 2) { for (let i = 1; i < 10; i++) ln(0, .07 + i * .093, 1, .07 + i * .093); for (let i = 1; i < 4; i++) ln(i / 4, .07, i / 4, 1); }
     if (b === 3) { for (let r = 0; r < 6; r++) { const t = .07 + r * .155; ln(0, t, 1, t); for (let i = 0; i < 2; i++) { const s = (i + (r % 2) * .5) / 2 + .25; ln(s, t, s, t + .155); } } }
+    if (b === 4) {   // bunker: concrete panels with rivets and a pipe
+      for (const t of [.38, .7]) ln(0, t, 1, t, 'rgba(8,8,8,.5)', .6); ln(.5, .07, .5, 1, 'rgba(8,8,8,.5)', .6);
+      for (const [rs, rt] of [[.08, .34], [.92, .34], [.08, .66], [.92, .66], [.42, .5], [.58, .5]]) E.ell(g, F(rs, rt), .5, .5, '#8a827a', PAL.ink);
+      E.line(g, F(0, .84), F(1, .84), 2.6, PAL.ink); E.line(g, F(0, .84), F(1, .84), 1.6, '#4a423a'); E.line(g, F(0, .865), F(1, .865), .4, 'rgba(255,200,150,.25)');
+      for (const bs of [.25, .75]) E.line(g, F(bs, .8), F(bs, .89), 1, '#2a2522');
+      if (vv === 1) { E.fillPts(g, E.quad(F, .3, .36, .7, .6), '#141210'); for (let i = 1; i < 5; i++) ln(.32, .36 + i * .048, .68, .36 + i * .048, '#3a3530', .7); }
+      if (vv === 2) { E.fillPts(g, E.quad(F, .26, .3, .74, .74), 'rgba(160,140,100,.75)'); Env.poly(g, [F(.32, .4), F(.4, .5), F(.5, .46), F(.58, .6), F(.68, .55)], .5, 'rgba(60,50,40,.7)'); for (const [ps, pt] of [[.4, .5], [.6, .62], [.5, .38]]) E.ell(g, F(ps, pt), .7, .7, '#a03020'); }
+      if (vv === 3) { const c = F(.5, .7); g.save(); g.shadowColor = '#ff4a1a'; g.shadowBlur = 8; E.ell(g, c, 2.6, 2.2, '#ff5a2a', PAL.ink); g.restore(); for (const dx of [-1.3, 0, 1.3]) E.line(g, [c[0] + dx, c[1] - 2], [c[0] + dx, c[1] + 2], .4, PAL.ink); E.fillPts(g, E.quad(F, .42, .6, .58, .64), '#2a2522'); }
+    }
     E.fillPts(g, E.quad(F, 0, 0, 1, .07), Paint.mix(th.wl, PAL.night, .45));                       // baseboard: wall clearly ends at the floor
     if (rnd() < .7) E.fillPts(g, E.quad(F, .1 + rnd() * .5, .1 + rnd() * .3, .4 + rnd() * .5, .2 + rnd() * .4), th.stain + '24', false);   // damp stains
-    if (vv === 1) {   // window with cold light
+    if (vv === 1 && b !== 4) {   // window with cold light
       const pts = E.quad(F, .2, .4, .8, .88), gr = g.createLinearGradient(0, pts[0][1], 0, pts[3][1]); gr.addColorStop(0, '#a8d8e8'); gr.addColorStop(1, '#2f5f74');
       E.path(g, pts); g.fillStyle = gr; g.fill(); g.lineWidth = .9; g.strokeStyle = PAL.ink; g.stroke();
       ln(.5, .4, .5, .88, PAL.ink, .8); ln(.2, .66, .8, .66, PAL.ink, .8); E.line(g, F(.16, .38), F(.84, .38), 1.3, '#cfe0e6');
       for (let i = 0; i < 4; i++) { const s = .25 + rnd() * .5, t = .5 + rnd() * .3; E.line(g, F(s, t), F(s + .05, t - .03), .4, 'rgba(255,255,255,.5)'); }
     }
-    if (vv === 2) {   // poster (abstract, no text)
+    if (vv === 2 && b !== 4) {   // poster (abstract, no text)
       const cols = [PAL.rose, PAL.indigo, PAL.petrol, '#a07a50'], c = cols[(b + idx) % 4];
       E.fillPts(g, E.quad(F, .28, .34, .72, .82), c); E.fillPts(g, E.quad(F, .34, .4, .66, .54), Paint.mix(c, PAL.night, .4), false);
       const cc = F(.5, .66); E.ell(g, cc, 2.4, 2.8, Paint.mix(c, '#ffffff', .35)); E.fillPts(g, [F(.62, .82), F(.72, .82), F(.72, .74)], Paint.mix(th.wr, PAL.night, .2), false);
     }
-    if (vv === 3) {   // neon sign: dark back plate + tube (purple = world); the glow is added at runtime as a light
+    if (vv === 3 && b !== 4) {   // neon sign: dark back plate + tube (purple = world); the glow is added at runtime as a light
       E.fillPts(g, E.quad(F, .18, .44, .82, .86), '#141824');
       const k = (b + idx) % 4, pts = [];
       if (k === 0) for (let i = 0; i <= 24; i++) { const a = i / 24 * 6.2832; pts.push(F(.5 + .2 * Math.cos(a), .65 + .13 * Math.sin(a))); }
@@ -214,10 +240,19 @@ const Env = {
     if (k === 'puddle') { E.fillPts(g, E.isoEll(.5, .5, .3), 'rgba(73,172,149,.35)', false); E.line(g, P(.35, .45, 0), P(.55, .4, 0), .6, 'rgba(207,224,230,.55)'); }
     if (k === 'bathmat') { E.fillPts(g, Q(.25, .32, .75, .68), 'rgba(218,87,132,.55)'); for (let i = 0; i < 8; i++) E.line(g, P(.25 + i * .07, .68, 0), P(.25 + i * .07, .74, 0), .35, 'rgba(218,87,132,.6)'); }
     if (k === 'drain') { E.fillPts(g, E.isoEll(.5, .5, .13), '#151a20'); for (let i = -1; i <= 1; i++) E.line(g, P(.42, .5 + i * .05, 0), P(.58, .5 + i * .05, 0), .4, '#7d8790'); }
+    if (k === 'rubble') for (let i = 0; i < 7; i++) { const c = P(.2 + rnd() * .6, .2 + rnd() * .6, 0), r = .8 + rnd() * 1.6; E.fillPts(g, [[c[0] - r, c[1]], [c[0] - r * .3, c[1] - r * .8], [c[0] + r, c[1] - r * .3], [c[0] + r * .6, c[1] + r * .5]], ['#5a524c', '#6a625a', '#48423e'][i % 3]); }
     if (k === 'oil') { E.fillPts(g, E.isoEll(.5, .5, .26), 'rgba(8,8,12,.6)', false); E.fillPts(g, E.isoEll(.44, .46, .08), 'rgba(109,114,165,.35)', false); }
     g.restore();
   },
 
+  lava(n) {   // lava pools in bunker rooms: away from spawn, door and container
+    for (let k = 0, tries = 0; k < n && tries < 80; tries++) {
+      const x = 2 + Math.random() * (Room.w - 4), y = 2 + Math.random() * (Room.h - 4);
+      if (Room.boxBlocked(x, y, 0.9) || Math.hypot(x - Room.spawn.x, y - Room.spawn.y) < 3 || (Room.door && Math.hypot(x - Room.door.x - 0.5, y - Room.door.y - 0.5) < 2.5)) continue;
+      if (Room.containers.some(c => Math.hypot(x - c.x, y - c.y) < 2) || Combat.hazards.some(h => Math.hypot(x - h.x, y - h.y) < 2.2)) continue;
+      Combat.hazards.push({ x, y, r: 0.8 + Math.random() * 0.35, t: 1e9, max: 1e9, dps: 10, lava: true }); k++;
+    }
+  },
   prepare() {   // called by Room.load: decor for back walls, neon/window lights, furniture choice, floor decor
     const R = Room, cells = [];
     for (let x = 1; x < R.w - 1; x++) if (R.tiles[0][x] === 1) cells.push([x, 0]);
@@ -229,8 +264,9 @@ const Env = {
       if (neon < 2 && r < 0.22) { v = 3; neon++; } else if (win < 2 && r < 0.42) { v = 1; win++; } else if (post < 3 && r < 0.62) { v = 2; post++; }
       R.wdeco[x + ',' + y] = v;
       const lx = y === 0 ? x + 0.5 : 1.02, ly = y === 0 ? 1.02 : y + 0.5;
-      if (v === 3) R.envLights.push({ x: lx, y: ly, z: 26, r: 85, a: 0.85, col: '164,85,232', g: 0.24, fl: Math.random() * 6 });
-      if (v === 1) R.envLights.push({ x: lx, y: ly, z: 24, r: 70, a: 0.5, col: '150,205,230', g: 0.06, fl: -1 });
+      const bunker = Env.biome() === 4;
+      if (v === 3) R.envLights.push({ x: lx, y: ly, z: 26, r: 85, a: 0.85, col: bunker ? '255,70,30' : '164,85,232', g: bunker ? 0.26 : 0.24, fl: Math.random() * 6 });
+      if (v === 1 && !bunker) R.envLights.push({ x: lx, y: ly, z: 24, r: 70, a: 0.5, col: '150,205,230', g: 0.06, fl: -1 });
     }
     for (let y = 1; y < R.h - 1; y++) for (let x = 1; x < R.w - 1; x++) if (R.tiles[y][x] === 1) R.furn[x + ',' + y] = Math.floor(Math.random() * 4);
     const free = [];
@@ -254,14 +290,14 @@ const Env = {
   },
   init() {
     const K = CFG.view.ss, rnd = Paint.rng(99);
-    { const { c, g } = Paint.canvas(32 * 4, 56 * 4);                      // furniture: rows = biomes, columns = props
-      for (let b = 0; b < 4; b++) Env.FURN[b].forEach((id, i) => { g.save(); g.beginPath(); g.rect(i * 32, b * 56, 32, 56); g.clip(); g.translate(i * 32 + 16, b * 56 + 40); Env.shadow(g); Env.FD[id](g); Env.overgrow(g, rnd); Paint.grain(g, rnd, -16, -40, 32, 56, 90); g.restore(); });
+    { const { c, g } = Paint.canvas(32 * 4, 56 * Env.FURN.length);                      // furniture: rows = biomes, columns = props
+      for (let b = 0; b < Env.FURN.length; b++) Env.FURN[b].forEach((id, i) => { g.save(); g.beginPath(); g.rect(i * 32, b * 56, 32, 56); g.clip(); g.translate(i * 32 + 16, b * 56 + 40); Env.shadow(g); Env.FD[id](g); Env.overgrow(g, rnd); Paint.grain(g, rnd, -16, -40, 32, 56, 90); g.restore(); });
       Env.imgs.furn = c; }
-    { const { c, g } = Paint.canvas(32 * 8, 56 * 4);                      // back walls: columns 0-3 decor on the left face (top row), 4-7 on the right face (left column)
-      for (let b = 0; b < 4; b++) for (let i = 0; i < 8; i++) { g.save(); g.beginPath(); g.rect(i * 32, b * 56, 32, 56); g.clip(); g.translate(i * 32 + 16, b * 56 + 40); Env.wallFrame(g, b, i); g.restore(); }
+    { const { c, g } = Paint.canvas(32 * 8, 56 * Env.FURN.length);                      // back walls: columns 0-3 decor on the left face (top row), 4-7 on the right face (left column)
+      for (let b = 0; b < Env.FURN.length; b++) for (let i = 0; i < 8; i++) { g.save(); g.beginPath(); g.rect(i * 32, b * 56, 32, 56); g.clip(); g.translate(i * 32 + 16, b * 56 + 40); Env.wallFrame(g, b, i); g.restore(); }
       Env.imgs.wall = c; }
-    { const { c, g } = Paint.canvas(32 * 3, 16 * 4);
-      for (let b = 0; b < 4; b++) for (let i = 0; i < 3; i++) { g.save(); g.translate(i * 32 + 16, b * 16); Env.decoFrame(g, b, i); g.restore(); }
+    { const { c, g } = Paint.canvas(32 * 3, 16 * Env.FURN.length);
+      for (let b = 0; b < Env.FURN.length; b++) for (let i = 0; i < 3; i++) { g.save(); g.translate(i * 32 + 16, b * 16); Env.decoFrame(g, b, i); g.restore(); }
       Env.imgs.deco = c; }
     { const { c, g } = Paint.canvas(24 * 4, 22);
       Env.TRASH.forEach((id, i) => { g.save(); g.beginPath(); g.rect(i * 24, 0, 24, 22); g.clip(); g.translate(i * 24 + 12, 20); Env.TD[id](g); g.restore(); });

@@ -5,17 +5,24 @@ const Boss = {
   last: '', pillars: [],
   reset() { Boss.pillars = []; },
   cur() { return Combat.enemies.find(x => x.boss); },
-  pick() { const ids = Object.keys(CFG.bosses).filter(k => k !== Boss.last); return ids[Math.floor(Math.random() * ids.length)]; },
+  pick() {   // the bunker always ends with the final boss; elsewhere a random one (never twice in a row)
+    if (Run.biome && Run.biome.name === 'BUNKER') return 'grossvermueller';
+    const ids = Object.keys(CFG.bosses).filter(k => k !== Boss.last && !CFG.bosses[k].final); return ids[Math.floor(Math.random() * ids.length)];
+  },
+  scale(n) {   // boss number n (0 = first): HP, damage and attack pace rise much faster than the normal rooms
+    const C = CFG.run.boss, i = Math.min(n, C.hp.length - 1), loop = Math.max(0, n - C.hp.length + 1);
+    return { hp: C.hp[i] * (1 + C.loopHp * loop), dmg: C.dmg[i] * (1 + C.loopDmg * loop), gap: C.gap[i] };
+  },
   init(e) {
-    const id = Boss.pick(), B = CFG.bosses[id], m = Run.hpMul('boss'); Boss.last = id;
+    const id = Boss.pick(), B = CFG.bosses[id], k = Boss.scale(Run.tier()), m = k.hp; Boss.last = id; e.bk = k;
     e.boss = true; e.bid = id; e.bd = B; e.abs = []; e.aff = {}; e.acd = {};
     e.def = Object.assign({}, e.def, { color: B.color, speed: B.speed, r: B.r, burst: null, kbMul: 0.1 }); e.radius = B.r;
     e.maxHp = e.hp = Math.round(B.hp * m); e.maxArmor = e.armor = Math.round(B.armor * m);
     e.bs = { ph: 0, st: 'idle', t: 2.2, atk: null, spin: 0, lastAtk: '' };
     Combat.text(Player.x, Player.y - 1.2, B.name, '#ffd34a', true); Snd.sfx('burst');
   },
-  hit(e, dmg) { return Player.hurt(Math.round(dmg * Run.dmgMul()), e.x, e.y); },
-  shot(e, a, sp, dmg) { Combat.shots.push({ x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 4, dmg: Math.round(dmg * Run.dmgMul()) }); },
+  hit(e, dmg) { return Player.hurt(Math.round(dmg * (e.bk ? e.bk.dmg : Run.dmgMul())), e.x, e.y); },
+  shot(e, a, sp, dmg) { Combat.shots.push({ x: e.x, y: e.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 4, dmg: Math.round(dmg * (e.bk ? e.bk.dmg : Run.dmgMul())) }); },
   ringShots(e, n, off, sp, dmg) { for (let i = 0; i < n; i++) Boss.shot(e, off + i / n * 6.283, sp, dmg); },
   free(x, y, r) { return !Room.boxBlocked(x, y, r || 0.4); },
   spot(cx, cy, minR, maxR) {   // random free floor point around (cx, cy)
@@ -89,7 +96,7 @@ const Boss = {
     } else if (A.ph === 'act') {
       if (T.tick) T.tick(e, A, dt);
       if (S.st !== 'idle' && A.t <= 0) { A.ph = 'rec'; A.t = T.rec; if (T.end) T.end(e, A); }
-    } else if (A.t <= 0) { S.st = 'idle'; S.atk = null; S.t = B.phases[S.ph].gap; e.state = 'chase'; }
+    } else if (A.t <= 0) { S.st = 'idle'; S.atk = null; S.t = B.phases[S.ph].gap * (e.bk ? e.bk.gap : 1); e.state = 'chase'; }
   },
   start(e, dx, dy, d) {
     const S = e.bs, L = e.bd.phases[S.ph].atk; let id;
@@ -125,12 +132,18 @@ const Boss = {
         }
       }
     }
+    if (kind === 'lava') for (let i = 0; i < 2; i++) { const p = Boss.spot(Room.w / 2, Room.h / 2, 2, 6); if (Math.hypot(p.x - Player.x, p.y - Player.y) > 2.2) Combat.hazards.push({ x: p.x, y: p.y, r: 0.95, t: 1e9, max: 1e9, dps: 10, lava: true, bossLava: true }); }
     if (kind === 'hazards') for (let i = 0; i < 5; i++) { const p = Boss.spot(Room.w / 2, Room.h / 2, 1, 5); Combat.hazards.push({ x: p.x, y: p.y, r: 1.1, t: 14, max: 14, dps: 7 }); }
     Camera.shake(3);
   },
   clearArena() { for (const [x, y] of Boss.pillars) if (Room.tiles[y]) Room.tiles[y][x] = 0; Boss.pillars = []; },
   onDeath(e) {
-    Boss.clearArena(); Combat.hazards = []; Combat.shots = []; Combat.blasts = [];
+    Boss.clearArena(); Combat.hazards = Combat.hazards.filter(h => h.lava && !h.bossLava); Combat.shots = []; Combat.blasts = [];
+    if (e.bd.final) {                                                   // final boss: outro + win counter
+      Save.stats.wins = (Save.stats.wins || 0) + 1; Save.save();
+      Run.card = { t0: Game.time, a: 'BUNKER GESÄUBERT', b: 'SIEG NR. ' + Save.stats.wins + '  ·  DER AUSGANG FÜHRT AUFS DACH' }; Run.won = true;
+      Dialog.start(STORY.finalBoss.outro);
+    }
     for (const m of Combat.enemies) if (m.owner === e) m.dead = true;                       // adds vanish with the boss
     Camera.shake(9); Game.hitstop = 0.25; Snd.sfx('door');
     Particles.burst(e.x, e.y, 8, 40, { col: e.def.color, speed: 6, up: 90, life: 1, size: 2, grav: 80, decal: true });
@@ -146,7 +159,13 @@ const Boss = {
   },
   drawHazards(ctx, cam) {
     ctx.lineWidth = 1;
-    for (const h of Combat.hazards) { const a = Math.min(1, h.t / 1.5); ctx.globalAlpha = a; Abilities.ring(ctx, cam, h.x, h.y, h.r, 'rgba(140,220,70,.9)', 'rgba(90,170,40,.42)', 1); ctx.globalAlpha = 1; }
+    for (const h of Combat.hazards) if (h.lava) {                        // lava = danger: hot orange, bubbling, glowing
+      const k = 0.5 + 0.5 * Math.sin(Game.time * 2 + h.x * 3);
+      ctx.save(); ctx.shadowColor = '#ff6a20'; ctx.shadowBlur = 12; Abilities.ring(ctx, cam, h.x, h.y, h.r, 'rgba(255,190,90,.95)', 'rgba(255,' + (70 + Math.round(40 * k)) + ',20,.88)', 1); ctx.restore();
+      Abilities.ring(ctx, cam, h.x + 0.08, h.y - 0.05, h.r * 0.5, 'rgba(0,0,0,0)', 'rgba(255,215,110,' + (0.35 + 0.3 * k) + ')', 1);
+      if (Math.random() < 0.04) Particles.burst(h.x + (Math.random() - 0.5) * h.r, h.y + (Math.random() - 0.5) * h.r, 1, 2, { col: '#ffb040', speed: 0.4, up: 25, life: 0.6, size: 1, grav: 60 });
+    }
+    for (const h of Combat.hazards) if (!h.lava) { const a = Math.min(1, h.t / 1.5); ctx.globalAlpha = a; Abilities.ring(ctx, cam, h.x, h.y, h.r, 'rgba(140,220,70,.9)', 'rgba(90,170,40,.42)', 1); ctx.globalAlpha = 1; }
   },
   drawTel(ctx, cam) {
     const e = Boss.cur(); if (!e || !e.bs || !e.bs.atk || e.bs.atk.ph !== 'wind') return;

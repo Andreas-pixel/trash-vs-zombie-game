@@ -72,7 +72,7 @@ const Snd = {
              bass: [0,0,-1,0,1,-1,0,-1,0,0,-1,3,-1,1,-1,0], arp: [-1,-1,4,-1,-1,3,-1,-1,4,-1,-1,2,-1,-1,3,-1] }
   },
   pickMode() {
-    if (Game.mode === 'hub') return 'hub';
+    if (Game.mode === 'hub' || Game.mode === 'roof') return 'hub';
     if (Game.mode === 'tut') return Tut.step === 4 && Combat.enemies.length ? 'fight' : 'calm';
     if (Player.dead) return '';
     if (Run.state === 'cleared') return 'calm';

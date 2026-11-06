@@ -25,7 +25,7 @@ Browser-Roguelike in HTML5 und JavaScript. Keine Bibliotheken, keine Engine, kei
 | `js/core/` | Projektion, Eingabe, Kamera |
 | `js/entities/` | Spielfigur |
 | `js/combat/` | Kampf, Gegner-Fähigkeiten, Bosse, Waffen |
-| `js/world/` | Räume, Zufallsräume, Müll, Küche (Hub) |
+| `js/world/` | Räume, Zufallsräume, Müll, Küche (Hub), Siegesfeier auf dem Dach |
 | `js/game/` | Run-Ablauf, Spielstand, Skills, Rüstung, Story-Ablauf, Tutorial |
 | `js/art/` | Gemalte Grafik, Bewuchs, Partikel, optionale PNG-Sprites |
 | `js/audio/` | Sound und Musik |

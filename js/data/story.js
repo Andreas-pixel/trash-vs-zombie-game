@@ -4,19 +4,19 @@
    Sprecher: 'narrator', 'coole', 'schuechtern', 'nerdig', 'zombie', 'player' (= gewaehlte Figur), 'a' / 'b' (= die zwei anderen Bewohner) ============ */
 const STORY = {
   intro: [
-    ['narrator', 'Tag 23 der Apokalypse. Aus dem Keller der WG sind Untote gekrochen. In erfundenen Uniformen. Mit einem einzigen Ziel.'],
-    ['narrator', 'Sie wollen die Erde verdrecken. Zimmer für Zimmer. Erst die WG, dann den Rest der Welt.'],
-    ['coole', 'Okay. Krisensitzung. Die schmeißen ihren Müll einfach überall hin.'],
-    ['nerdig', 'Nicht einfach so. Systematisch. Die haben einen Plan, und der heißt: alles vermüllen.'],
-    ['schuechtern', 'Ich hab gestern im Bad aufgeräumt. Heute liegt da wieder alles voll.'],
-    ['coole', 'Dann machen wir es andersrum. Wir räumen auf. Und die raus.'],
-    ['nerdig', 'Jedes Stück Müll, das wir einsammeln und entsorgen, fehlt ihnen für ihren Plan.'],
-    ['schuechtern', 'Und der Müll im Container ... ist der was wert?'],
-    ['nerdig', 'Für uns schon. Wir tauschen ihn gegen bessere Ausrüstung. Pfandsystem, nur ehrlicher.'],
-    ['coole', 'Also: Zombies verkloppen, Müll entsorgen, Planet retten. Wer geht vor?']
+    ['narrator', 'Die Welt liegt in Schutt und Asche. Die Apokalypse ist in vollem Gange. Wieder zum Leben erweckte Soldaten des Dritten Reiches treiben ihr dunkles Unwesen.'],
+    ['narrator', 'Ihr Ziel ist es, die Erde zu verdrecken und mit Müll zu überfluten, um neuen Boden für die Wiederauferstehung des unheilvollen Regimes des schlimmsten Mannes aller Zeiten vorzubereiten …'],
+    ['narrator', 'Adolf Hitler.'],
+    ['narrator', 'Aber wir werden ihnen zuvorkommen!'],
+    ['narrator', 'Gemeinsam werden wir unser sicheres Umfeld verlassen und die Welt wieder vom Müll befreien.'],
+    ['narrator', 'Je mehr Müll wir sammeln, desto besser werden wir.'],
+    ['narrator', 'Das Ziel ist also klar …'],
+    ['narrator', 'Müll entsorgen …'],
+    ['narrator', 'Nazis enthaupten …'],
+    ['narrator', '… diesen Bastarden den FÜHRERschein entziehen.']
   ],
-  chosen: { coole: 'Ich. Natürlich ich. Einer muss ja gut dabei aussehen.', schuechtern: 'Ich. Bevor ich es mir anders überlege.', nerdig: 'Ich. Ich hab den Plan erklärt, ich zieh ihn auch durch.' },
-  select: { coole: 'Fellkragen, große Klappe, gute Laune. Meistens.', schuechtern: 'Hat den Putzplan geschrieben. Hält sich als Einziger dran.', nerdig: 'Hat zu allem eine Theorie. Auch zu dir.' },
+  chosen: { coole: 'Tell Hitler I said hi!', schuechtern: 'Heil Hitler? Heil Hell!', nerdig: 'You want more space? I’ll give you Six Feet Under.' },
+  select: { coole: 'Nazis esse ich zum Frühstück!', schuechtern: 'I’m a Chef! My favorite Dish? Knuckle-Sandwich.', nerdig: 'Ähhm … excuse me? Fuck you, Mr. Nazi!' },
   tut: {
     start: [['a', 'Im Bad haben sie schon angefangen. Fang da an.'], ['b', 'Und mach die Tür hinter dir zu. Der Geruch soll nicht in die Küche.']],
     dash: [['a', 'Wenn es eng wird: ausweichen. Ganz kurz bist du dabei unverwundbar.']],
@@ -40,8 +40,28 @@ const STORY = {
     schuechtern: ['Ich habe den Putzplan überarbeitet. Jetzt steht da: alles. Jeden Tag.', 'Am Kühlschrank kannst du Fähigkeiten freischalten. Ich habe Zettel drangeklebt. Bunte.', 'Wenn sie dich treffen, fällt dir Müll aus dem Rucksack. Heb ihn wieder auf. Bitte.'],
     nerdig: ['Beobachtung: Die Untoten drehen sich langsam. Von hinten triffst du härter.', 'Der Container entsorgt deinen Müll. Was du nicht abgibst, ist beim Tod weg. Und liegt wieder bei denen.', 'Ich habe ihre Uniformen analysiert. Komplett ausgedacht. Wie der Rest ihrer Weltanschauung.']
   },
+  firstRun: [['a', 'Erster Einsatz überlebt. Mehr oder weniger. Jetzt kommt der Teil, der dich stärker macht.'],
+    ['b', 'Wir haben jetzt {bank} entsorgten Müll auf dem Konto. Das ist unsere Währung. Am Kühlschrank kaufst du davon Fähigkeiten, und die bleiben für immer.'],
+    ['a', 'Und zieh dir was Vernünftiges an. Im Schrank gibt es Helm, Weste und Schuhe. Was du unterwegs findest, liegt im Menü unter Kleidung. Taste C.'],
+    ['b', 'Mit Panzer kommt weniger Schaden durch. Mit Fähigkeiten teilst du mehr aus. Beides zusammen: Die Erde wird sauber.']],
   back: { coole: 'Da bist du ja wieder. Du riechst nach Badezimmer. Und nach Niederlage.', schuechtern: 'Du lebst! Also, so halb. Setz dich kurz.', nerdig: 'Zurück aus dem Feld. Zwischenstand: Die Erde ist noch dreckig. Aber weniger.' },
-  names: { coole: 'DER COOLE', schuechtern: 'DER SCHÜCHTERNE', nerdig: 'DER NERDIGE', zombie: 'NAZI-ZOMBIE', narrator: '' }
+  roof: {
+    arrive: [['a', 'Na endlich! Wir dachten schon, du putzt da unten noch die Lava weg.'],
+      ['b', 'Wir haben den Grill angeworfen. Das Fass war vorher Müll. Jetzt ist es Party.'],
+      ['player', 'Ist das ... die ganze Stadt?'],
+      ['a', 'Alles, was davon übrig ist. Kaputt, verwachsen und ab heute ein bisschen sauberer.'],
+      ['b', 'Und nirgends ein Nazi-Zombie. Nur Ratten. Die räumen wenigstens hinter sich auf.'],
+      ['narrator', 'Unter ihnen schläft die Stadt. Über ihnen knallt das Feuerwerk. Für eine Nacht ist die Welt nicht vermüllt.']],
+    talk: ['Die Erde riecht schon fast wieder nach Erde.', 'Ich hab die Musik ausgesucht. Beschwerden bitte an den Container.', 'Morgen gehen wir wieder runter. Irgendwo liegt immer Dreck.', 'Die Würstchen sind aus dem Notvorrat. Frag nicht, wie alt.'],
+    credits: ['DIE ERDE IST SAUBER', 'Für den Moment.', 'DANKE FÜRS SPIELEN', 'FEIER WEITER ODER NIMM DIE TREPPE ZURÜCK IN DIE KÜCHE']
+  },
+  finalBoss: {
+    intro: [['boss', 'Ah. Der Putzdienst. Ihr kommt spät.'], ['player', 'Wir kommen genau richtig. Zum Rausbringen.'],
+      ['boss', 'Mein Plan ist perfekt: eine Welt, die stinkt. Ordentlich vermüllt, bis in die letzte Ecke.'],
+      ['boss', 'Und dieser Bunker hat sogar Lava. Habe ich extra einbauen lassen.'], ['player', 'Klar. Was soll schon schiefgehen.']],
+    outro: [['boss', 'Das ... war nicht ... eingeplant ...'], ['player', 'Müll gehört in den Container. Du auch.'], ['narrator', 'Der Bunker ist sauber. Die Erde atmet auf. Für den Moment.']]
+  },
+  names: { coole: 'DER COOLE', schuechtern: 'DER SCHÜCHTERNE', nerdig: 'DER NERDIGE', zombie: 'NAZI-ZOMBIE', boss: 'ADOLFI HITLER', narrator: '' }
 };
 const TUT_ROOM = [   // tutorial bathroom (furniture fixed in Tut.start): '#' wall/furniture, 'P' spawn, 'C' container, 'D' door to the kitchen
   "#############",

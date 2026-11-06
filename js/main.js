@@ -25,6 +25,7 @@ const Game = {
     if (Game.ui) { UI.update(); Input.endFrame(); return; }   // menus, pause and title pause the world
     Run.update(dt);
     if (Run.trans) { Camera.update(dt, Player); Input.endFrame(); return; }   // world frozen during room transition
+    if (Game.mode === 'roof') Roof.tick(dt);
     Player.update(dt); Combat.update(dt); Trash.update(dt); Gear.update(dt); Particles.update(dt); Camera.update(dt, Player); Input.endFrame();
   },
   tick(t) {

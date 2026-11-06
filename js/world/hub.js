@@ -4,7 +4,7 @@
 const Hub = {
   nearT: false, nearR: false, nearW: false, sel: 0,
   enter() {
-    const fromRun = Game.mode === 'run';
+    const fromRun = Game.mode === 'run' || Game.mode === 'roof';
     Game.mode = 'hub'; Game.ui = null; Skills.resetRun(); Skills.apply();
     Trash.bank += Trash.secured; Trash.secured = 0; Trash.carry = []; Trash.items = [];          // secured trash becomes currency; carried is gone
     if (fromRun) {
@@ -53,6 +53,7 @@ const Hub = {
     if (Hub.nearR) Trash.label(ctx, x, y - 38, 'F: WAFFENREGAL', PAL.uiInteract);
   },
   npcs() {   // the two residents you did not pick hang out in the kitchen (all three during the intro)
+    if (Game.mode === 'roof') return Roof.npcs();
     if (Game.mode !== 'hub') return [];
     if (Story.phase === 'intro' || Game.ui === 'select') return Paint.NAMES.map((n, i) => ({ n, x: [6.6, 9, 11.4][i], y: [4.6, 3.7, 4.6][i] }));
     return Paint.NAMES.filter(n => n !== Player.look).map((n, i) => ({ n, x: [6.6, 11.4][i], y: 4.6 }));

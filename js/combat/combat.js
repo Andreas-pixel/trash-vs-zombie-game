@@ -181,12 +181,12 @@ const Combat = {
   },
   /* ---- drawing ---- */
   drawEnemy(ctx, e, cam) {
-    const s = Iso.toScreen(e.x, e.y, cam), x = Math.round(s.x), y = Math.round(s.y), boss = e.type === 'boss', big = e.type === 'brute' || e.type === 'bloater', h = Sprites.ok[e.type] ? CFG.sprites[e.type].bar : boss ? 26 : big ? 18 : 14, hw = boss ? 9 : big ? 6 : 5;
+    const s = Iso.toScreen(e.x, e.y, cam), x = Math.round(s.x), y = Math.round(s.y), sname = e.bd && e.bd.final ? 'boss_final' : e.type, boss = e.type === 'boss', big = e.type === 'brute' || e.type === 'bloater', h = Sprites.ok[sname] ? CFG.sprites[sname].bar : boss ? 26 : big ? 18 : 14, hw = boss ? 9 : big ? 6 : 5;
     ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.beginPath(); ctx.ellipse(x, y, hw + 2, 3.5, 0, 0, 7); ctx.fill();
     const bob = (e.state === 'chase' || e.state === 'kite') ? Math.round(Math.abs(Math.sin(Game.time * 8 + e.x * 3)) * 1.5) * (Sprites.ok[e.type] ? 0 : 1) : 0;
     ctx.save(); ctx.translate(0, -bob);   // walk bob
     const an = e.stun > 0 ? 'hurt' : e.state === 'windup' ? 'windup' : e.state === 'recover' ? 'attack' : (e.state === 'chase' || e.state === 'kite') ? 'walk' : 'idle';
-    const spr = Sprites.draw(ctx, e.type, an, Sprites.track(e, an), x, y, { x: e.face.x - e.face.y, y: (e.face.x + e.face.y) * 0.5 }, { flash: e.flashT > 0 });
+    const spr = Sprites.draw(ctx, sname, an, Sprites.track(e, an), x, y, { x: e.face.x - e.face.y, y: (e.face.x + e.face.y) * 0.5 }, { flash: e.flashT > 0 });
     let col = e.def.color;
     if (e.flashT > 0) col = '#fff';                                                  // 1-frame white hit-flash
     else if (e.state === 'windup') col = (Math.floor(Game.time * 30) % 2) ? '#ff3030' : col;
