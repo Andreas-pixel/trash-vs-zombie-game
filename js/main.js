@@ -22,6 +22,7 @@ const Game = {
     Game.time += dt;
     if (!Game.ui && Input.hit('KeyI', 'Tab', 'KeyC', 'KeyK') && !Run.trans && !Player.dead) Menu.open(Input.hit('KeyC') ? 0 : Input.hit('KeyK') ? 2 : Menu.last);
     if (!Game.ui && Input.hit('Escape') && !Run.trans && !Player.dead) { Game.ui = 'pause'; UI.sel = 0; Input.pressed.delete('Escape'); Snd.sfx('ui'); }
+    if (Game.ui && Run.trans) Run.update(dt);                 // a fade always finishes, even if a dialog opened during it
     if (Game.ui) { UI.update(); Input.endFrame(); return; }   // menus, pause and title pause the world
     Run.update(dt);
     if (Run.trans) { Camera.update(dt, Player); Input.endFrame(); return; }   // world frozen during room transition
